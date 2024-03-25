@@ -1,6 +1,30 @@
+from dataclasses import dataclass
 import json
 import os
 import requests
+
+@dataclass
+class WordCardMetadata:
+    @dataclass
+    class Meaning:
+        eng_meaning: str
+        chinese_meaning: str
+        POS: str
+        examples: list[str]
+
+    @dataclass
+    class PrepositionExample:
+        combination: str
+        example: str
+
+    word: str
+    pronounciation: str
+    meanings: list[dict]
+    common_prepositions: list[PrepositionExample]
+    workplace_examples: list[str]
+    development_examples: list[str]
+    tags: list[str]
+
 
 def add_note():
     pass
@@ -11,7 +35,7 @@ def generate_card_metadata(word: str, api_key: str):
         'Authorization': f'Bearer {api_key}'
     }
     body = {
-        'model': 'gpt-4-0125-preview',
+        'model': 'gpt-3.5-turbo',
         'messages': [
             {
                 'role': 'system',
@@ -28,7 +52,7 @@ examples: An array, containing one or two example sentences where the word is us
 5. Development Examples: The field name should be development_examples. Since the user is a programmer, if the word has examples of use in the technology or R&D management fields, you are similarly expected to provide some example sentences, formatted the same as workplace_examples.
 6. Tags: The field name is tags, mainly used for categorizing cards. It can return multiple tags in array form. The current selectable values for tags are "common" and "dev", with "common" indicating scenarios commonly used in daily life, and "dev" indicating relevance to the technical field.
 
-Next, the user will send you a word, but you don't need to immediately generate the corresponding JSON content for it. You need to first write an analysis for this word according to the requirements of the above prompt, specifying what should be filled in for each field, especially for the fields "common_prepositions", "workplace_examples", "development_examples". Specifically analyze whether this word should have content in these three fields and what that content should be. After completing these analyses, the user will asked for the JSON when it's needed.'''
+Next, the user will send you a word, but you don't need to immediately generate the corresponding JSON content for it. You need to first write an analysis for this word according to the requirements of the above prompt, specifying what should be filled in for each field, especially for the fields "common_prepositions", "workplace_examples", "development_examples". Specifically analyze whether this word should have content in these three fields and what that content should be. After completing these analyses, the user will aske for the JSON format content when needed.'''
             },
             {
                 'role': 'user',
@@ -50,10 +74,13 @@ Next, the user will send you a word, but you don't need to immediately generate 
     })
     body['response_format'] = {'type': 'json_object'}
     resp = requests.post(url, json=body, headers=headers)
-    print(resp.text)
+    print(resp.json()['choices'][0]['message']['content'])
+
+def add_note():
+    pass
 
 def main():
-    generate_card_metadata('pineapple', os.environ.get('OPENAI_API_KEY'))
+    generate_card_metadata('jump', os.environ.get('OPENAI_API_KEY'))
 
 if __name__ == '__main__':
     main()
